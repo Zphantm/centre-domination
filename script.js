@@ -41,6 +41,7 @@ if (typeof io !== 'undefined') {
     isGameActive = false; // Waiting for opponent
     showGame();
     updateStatusUI();
+    addChatMessage(`Room ${code} created. Waiting for opponent...`, true, true);
   });
 
   socket.on('gameStart', ({ roomCode: code }) => {
@@ -50,6 +51,7 @@ if (typeof io !== 'undefined') {
     isGameActive = true; // Opponent joined!
     showGame();
     updateStatusUI();
+    addChatMessage(`Opponent joined. Let's play!`, false, true);
     
     const qrOverlay = document.getElementById('qr-overlay');
     if (qrOverlay) qrOverlay.classList.add('hidden');
@@ -516,7 +518,7 @@ document.getElementById('btn-join-room').addEventListener('click', () => {
   const code = codeInput.value.trim().toUpperCase();
   if (code) {
     console.log("Attempting to join/create room:", code);
-    roomCode = code;
+    roomCode = code; // Ensure roomCode is set before emitting
     gameMode = 'Online';
     
     // Hide modal and show the game board immediately (optimistic)
@@ -524,13 +526,7 @@ document.getElementById('btn-join-room').addEventListener('click', () => {
     showGame();
     
     // Show waiting state while we connect
-    const waitingMsg = document.getElementById('waiting-msg');
-    const roomDisplay = document.getElementById('room-display');
-    const statusBar = document.getElementById('game-status-bar');
-    
-    if (waitingMsg) waitingMsg.classList.remove('hidden');
-    if (roomDisplay) roomDisplay.textContent = `Room: ${roomCode}`;
-    if (statusBar) statusBar.classList.remove('hidden');
+    updateStatusUI();
 
     if (socket && socket.connected) {
       socket.emit('joinRoom', roomCode);
@@ -666,12 +662,17 @@ function updateStatusUI() {
 }
 
 // Chat logic
-function addChatMessage(message, isSelf) {
+function addChatMessage(message, isSelf, isSystem = false) {
+  console.log(`Adding chat message (isSelf=${isSelf}, isSystem=${isSystem}): ${message}`);
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
 
   const msgDiv = document.createElement('div');
-  msgDiv.className = `chat-msg ${isSelf ? 'self' : ''}`;
+  let className = 'chat-msg';
+  if (isSystem) className += ' system';
+  else if (isSelf) className += ' self';
+  
+  msgDiv.className = className;
   msgDiv.textContent = message;
   chatMessages.appendChild(msgDiv);
   
@@ -685,7 +686,18 @@ function addChatMessage(message, isSelf) {
 }
 
 function sendChatMessage(message) {
-  if (!message.trim() || gameMode !== 'Online') return;
+  if (!message.trim() || gameMode !== 'Online') {
+    console.log("Chat suppressed: mode=", gameMode, "msg=", message);
+    return;
+  }
+  
+  // Final safety check for roomCode
+  if (!roomCode) {
+    console.error("CRITICAL: Chat failed because roomCode is null!");
+    return;
+  }
+
+  console.log(`Sending chat message to room ${roomCode}: ${message}`);
   socket.emit('chatMessage', { roomCode, message });
   addChatMessage(message, true);
 }

@@ -37,14 +37,18 @@ io.on('connection', (socket) => {
   });
 
   socket.on('makeMove', ({ roomCode, from, to }) => {
+    console.log(`Move in room ${roomCode}: ${from} -> ${to}`);
     socket.to(roomCode).emit('opponentMove', { from, to });
   });
 
   socket.on('resetGame', (roomCode) => {
+    console.log(`Game reset in room ${roomCode}`);
     socket.to(roomCode).emit('gameReset');
   });
 
-  socket.on('chatMessage', ({ roomCode, message }) => {
+  socket.on('chatMessage', (data) => {
+    const { roomCode, message } = data;
+    console.log(`CHAT [Room ${roomCode}] from ${socket.id}: ${message}`);
     socket.to(roomCode).emit('chatMessage', { message });
   });
 
