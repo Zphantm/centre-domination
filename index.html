@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Centre Domination</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="splash-screen">
+    <h1>Centre Domination</h1>
+    <div id="instructions">
+      <h3>How to Play</h3>
+      <ul>
+        <li>Move your pieces to adjacent empty spots.</li>
+        <li>Use the <strong>Centre</strong> strategically to move and control the board.</li>
+        <li><strong>Capture:</strong> Jump over an opponent's piece in the centre to an opposite empty spot to remove it!</li>
+        <li><strong>Win:</strong> Capture all opponent pieces or trap them so they cannot move.</li>
+      </ul>
+    </div>
+    <div id="mode-selection-splash">
+      <button id="btn-1p-splash" class="mode-btn-large">1 Player (VS AI)</button>
+      <button id="btn-2p-splash" class="mode-btn-large">2 Players (Local)</button>
+      <button id="btn-online-splash" class="mode-btn-large">Online Multiplayer</button>
+    </div>
+  </div>
+
+  <!-- Room Entry Modal (Moved outside splash) -->
+  <div id="room-modal" class="hidden">
+    <div class="modal-content">
+      <h3>Join or Create a Room</h3>
+      <p>Enter a room code to play with a friend:</p>
+      <input type="text" id="room-code-input" placeholder="e.g. GAME123" maxlength="10" />
+      <div class="modal-buttons">
+        <button id="btn-join-room" class="mode-btn-large">Join Game</button>
+        <button id="btn-cancel-modal" class="mode-btn-large secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-container" class="hidden">
+    <div id="game-header">
+      <div id="game-title-mini">Centre Domination</div>
+      <div id="compact-stats">
+        <div id="scoreboard">
+          <div class="score red-score"><span id="red-count">4</span></div>
+          <div class="score green-score"><span id="green-count">4</span></div>
+        </div>
+        <div id="turn-display"></div>
+      </div>
+      <div id="game-controls-mini">
+        <button id="reset-btn" title="Reset Game">⟳</button>
+        <button id="home-btn" title="Back to Menu">🏠</button>
+      </div>
+    </div>
+
+    <div id="game-status-bar" class="hidden">
+      <span id="player-indicator"></span>
+      <span id="room-display"></span>
+      <div id="waiting-msg" class="hidden">Waiting for opponent...</div>
+      <button id="show-qr-btn" title="Show Join QR Code">📱 QR</button>
+    </div>
+
+    <!-- QR Code Overlay Modal -->
+    <div id="qr-overlay" class="hidden">
+      <div class="modal-content">
+        <h3>Invite a Friend</h3>
+        <p>Scan this QR code to join room: <strong id="qr-room-code"></strong></p>
+        <div id="qrcode-container"></div>
+        <button id="close-qr-btn">Close</button>
+      </div>
+    </div>
+
+    <div id="board">
+      <!-- SVG Connections -->
+      <svg id="connections" width="450" height="450">
+        <!-- Ring -->
+        <line x1="225" y1="45" x2="352" y2="98" />
+        <line x1="352" y1="98" x2="405" y2="225" />
+        <line x1="405" y1="225" x2="352" y2="352" />
+        <line x1="352" y1="352" x2="225" y2="405" />
+        <line x1="225" y1="405" x2="98" y2="352" />
+        <line x1="98" y1="352" x2="45" y2="225" />
+        <line x1="45" y1="225" x2="98" y2="98" />
+        <line x1="98" y1="98" x2="225" y2="45" />
+        <!-- Radial to center -->
+        <line x1="225" y1="45" x2="225" y2="225" />
+        <line x1="352" y1="98" x2="225" y2="225" />
+        <line x1="405" y1="225" x2="225" y2="225" />
+        <line x1="352" y1="352" x2="225" y2="225" />
+        <line x1="225" y1="405" x2="225" y2="225" />
+        <line x1="98" y1="352" x2="225" y2="225" />
+        <line x1="45" y1="225" x2="225" y2="225" />
+        <line x1="98" y1="98" x2="225" y2="225" />
+      </svg>
+
+      <!-- Outer ring -->
+      <div class="cell" data-index="0"></div>
+      <div class="cell" data-index="1"></div>
+      <div class="cell" data-index="2"></div>
+      <div class="cell" data-index="3"></div>
+      <div class="cell" data-index="4"></div>
+      <div class="cell" data-index="5"></div>
+      <div class="cell" data-index="6"></div>
+      <div class="cell" data-index="7"></div>
+
+      <!-- Centre -->
+      <div class="cell center" data-index="8"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
