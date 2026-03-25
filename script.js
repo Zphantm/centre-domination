@@ -59,6 +59,10 @@ if (typeof io !== 'undefined') {
     executeMove(from, to, true);
   });
 
+  socket.on('chatMessage', ({ message }) => {
+    addChatMessage(message, false);
+  });
+
   socket.on('gameReset', () => {
     resetGame(true);
   });
@@ -576,6 +580,7 @@ function showGame() {
   const splash = document.getElementById('splash-screen');
   const game = document.getElementById('game-container');
   const modal = document.getElementById('room-modal');
+  const chat = document.getElementById('chat-container');
 
   if (splash) {
     splash.classList.add('hidden');
@@ -590,6 +595,17 @@ function showGame() {
     game.style.display = 'flex';
   }
   
+  // Show chat only in Online mode
+  if (chat) {
+    if (gameMode === 'Online') {
+      chat.classList.remove('hidden');
+      chat.style.display = 'flex';
+    } else {
+      chat.classList.add('hidden');
+      chat.style.display = 'none';
+    }
+  }
+  
   resetGame();
 }
 
@@ -598,6 +614,7 @@ function showMenu() {
   const splash = document.getElementById('splash-screen');
   const game = document.getElementById('game-container');
   const modal = document.getElementById('room-modal');
+  const chat = document.getElementById('chat-container');
 
   if (game) {
     game.classList.add('hidden');
@@ -606,6 +623,10 @@ function showMenu() {
   if (modal) {
     modal.classList.add('hidden');
     modal.style.display = 'none';
+  }
+  if (chat) {
+    chat.classList.add('hidden');
+    chat.style.display = 'none';
   }
   if (splash) {
     splash.classList.remove('hidden');
@@ -616,6 +637,10 @@ function showMenu() {
   roomCode = null;
   playerRole = null;
   updateStatusUI();
+  
+  // Clear chat messages
+  const chatMessages = document.getElementById('chat-messages');
+  if (chatMessages) chatMessages.innerHTML = '';
 }
 
 function updateStatusUI() {
@@ -639,5 +664,50 @@ function updateStatusUI() {
     if (waitingMsg) waitingMsg.classList.add('hidden');
   }
 }
+
+// Chat logic
+function addChatMessage(message, isSelf) {
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages) return;
+
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `chat-msg ${isSelf ? 'self' : ''}`;
+  msgDiv.textContent = message;
+  chatMessages.appendChild(msgDiv);
+  
+  // Auto scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+  // Keep only last 10 messages to save memory
+  while (chatMessages.children.length > 10) {
+    chatMessages.removeChild(chatMessages.firstChild);
+  }
+}
+
+function sendChatMessage(message) {
+  if (!message.trim() || gameMode !== 'Online') return;
+  socket.emit('chatMessage', { roomCode, message });
+  addChatMessage(message, true);
+}
+
+document.getElementById('send-chat-btn').addEventListener('click', () => {
+  const input = document.getElementById('chat-input');
+  sendChatMessage(input.value);
+  input.value = '';
+});
+
+document.getElementById('chat-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    const input = document.getElementById('chat-input');
+    sendChatMessage(input.value);
+    input.value = '';
+  }
+});
+
+document.querySelectorAll('.emoji-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sendChatMessage(btn.textContent);
+  });
+});
 
 render();

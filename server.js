@@ -44,6 +44,10 @@ io.on('connection', (socket) => {
     socket.to(roomCode).emit('gameReset');
   });
 
+  socket.on('chatMessage', ({ roomCode, message }) => {
+    socket.to(roomCode).emit('chatMessage', { message });
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
     // Optional: handle player leaving room
